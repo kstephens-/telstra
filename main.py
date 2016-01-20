@@ -14,7 +14,7 @@ from sklearn.feature_selection import SelectKBest, chi2, f_classif
 
 
 submit = False
-version = '0.14'
+version = '0.25'
 
 
 def xgboost_model(train, labels, test):
@@ -27,8 +27,8 @@ def xgboost_model(train, labels, test):
     params['eta'] = 0.02
     params['gamma'] = 2.0
     params['max_depth'] = 10
-    params['min_child_weight'] = 0.05
-    params['max_delta_step'] = 2.0
+    params['min_child_weight'] = 0.1
+    params['max_delta_step'] = 1.5
     params['subsample'] = 0.75
     params['colsample_bytree'] = 0.85
     params['lambda'] = 0.2
@@ -128,22 +128,22 @@ if not submit:
         # knn = KNeighborsClassifier(
         #     n_neighbors=15,
         #     weights='uniform',
-        #     leaf_size=30,
+        #     leaf_size=50,
         #     p=1,
         #     n_jobs=-1
         # )
         # knn.fit(train, labels)
-        # # print()
-        # # print('knn score')
-        # # print(knn.score(test, answers))
-        # # print()
+        # # # print()
+        # # # print('knn score')
+        # print(knn.score(test, answers))
+        # # # print()
 
-        # bayes = MultinomialNB(alpha=0, fit_prior=True)
-        # bayes.fit(train, labels)
-        # # print()
-        # # print('bayes score')
-        # # print(bayes.score(test, answers))
-        # # print()
+        # # bayes = MultinomialNB(alpha=0, fit_prior=True)
+        # # bayes.fit(train, labels)
+        # # # print()
+        # # # print('bayes score')
+        # # # print(bayes.score(test, answers))
+        # # # print()
         # knn_train = np.reshape(knn.predict(train), (-1, 1))
         # knn_test = np.reshape(knn.predict(test), (-1, 1))
         # print()
@@ -168,8 +168,8 @@ if not submit:
         #svm_train = np.reshape(svm.predict(train), (-1, 1))
         #svm_test = np.reshape(svm.predict(test), (-1, 1))
 
-        # train = np.append(train, knn_train, axis=1)
-        # test = np.append(test, knn_test, axis=1)
+        #train = np.append(train, knn_train, axis=1)
+        #test = np.append(test, knn_test, axis=1)
         #train_labels = np.reshape(labels, (-1, 1))
 
         #train = np.append(train, train_labels, axis=1)

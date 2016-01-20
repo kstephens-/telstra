@@ -30,10 +30,139 @@ def resource_type_features(df):
 
     df_resource = pd.merge(df, resource_grpd, left_on='id', right_index=True)
     return df_resource.drop(['resource_type 1', 'resource_type 2',
-                             'resource_type 4', 'resource_type 5',
+                             'resource_type 4',
                              'resource_type 6', 'resource_type 8',
                              'resource_type 10'], axis=1)
 
+
+def resource_type_event_count(df):
+
+    p = pd.merge(resource_type, event_type, on='id')
+    t = p.loc[p['resource_type'] == 'resource_type 2', ['id', 'event_type']] \
+        .groupby(by=['id'], as_index=False).count()
+    df_two = pd.merge(df, t, on='id', how='left')
+
+    f = p.loc[p['resource_type'] == 'resource_type 4', ['id', 'event_type']] \
+        .groupby(by='id', as_index=False).count()
+    df_four = pd.merge(df_two, f, on='id', how='left')
+
+    e = p.loc[p['resource_type'] == 'resource_type 8', ['id', 'event_type']] \
+        .groupby(by='id', as_index=False).count()
+    df_eight = pd.merge(df_four, e, on='id', how='left')
+
+    t = p.loc[p['resource_type'] == 'resource_type 10', ['id', 'event_type']] \
+        .groupby(by='id', as_index=False).count()
+    df_ten = pd.merge(df_eight, t, on='id', how='left')
+
+    return df_ten
+
+
+def resource_type_log(df):
+
+    p = pd.merge(resource_type, log_feature, on='id')
+    t = p.loc[(p['resource_type'] == 'resource_type 1'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    df_one = pd.merge(df, t, on='id', how='left')
+
+    tw = p.loc[(p['resource_type'] == 'resource_type 2'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    df_two = pd.merge(df_one, tw, on='id', how='left')
+
+    se = p.loc[(p['resource_type'] == 'resource_type 7'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    df_se = pd.merge(df_two, se, on='id', how='left')
+
+    ei = p.loc[(p['resource_type'] == 'resource_type 8'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    df_ei = pd.merge(df_se, ei, on='id', how='left')
+
+    n = p.loc[(p['resource_type'] == 'resource_type 9'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    df_n = pd.merge(df_ei, n, on='id', how='left')
+
+    return df_n
+
+
+def resource_type_log_sum(df):
+
+    p = pd.merge(resource_type, log_feature, on='id')
+    t = p.loc[(p['resource_type'] == 'resource_type 3'), ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()
+    df_one = pd.merge(df, t, on='id', how='left')
+
+    f = p.loc[(p['resource_type'] == 'resource_type 4'), ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()
+    df_f = pd.merge(df, f, on='id', how='left')
+
+    return df_f
+
+
+def resource_type_log_total(df):
+
+    p = pd.merge(resource_type, log_feature, on='id')
+
+    # resource type 2
+    t = p.loc[(p['resource_type'] == 'resource_type 2'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+
+    t.loc[:, 'volume'] = p.loc[(p['resource_type'] == 'resource_type 2'), ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()['volume']
+
+    t.loc[:, 'total log volume two'] = t['volume'] / t['log_feature']
+
+    df_one = pd.merge(df, t[['id', 'total log volume two']], on='id', how='left')
+
+
+    # resource type ten
+    te = p.loc[(p['resource_type'] == 'resource_type 10'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+
+    te.loc[:, 'volume'] = p.loc[(p['resource_type'] == 'resource_type 10'), ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()['volume']
+
+    te.loc[:, 'total log volume ten'] = te['log_feature'] * te['volume']
+
+    df_te = pd.merge(df_one, te[['id', 'total log volume ten']], on='id', how='left')
+
+    return df_te
+
+
+def resource_type_severity(df):
+
+    p = pd.merge(resource_type, severity_type, on='id')
+    p.loc[:, 'resource type severity'] = \
+        ((p['resource_type'] == 'resource_type 6') &
+        (p['severity_type'] == 'severity_type 1')).astype(float)
+
+    t = p[['id', 'resource type severity']].groupby(by='id', as_index=False).median()
+
+    return pd.merge(df, t, on='id', how='left')
+
+    # events = [
+    #     'event_type 38',
+    #     'event_type 28',
+    #     'event_type 23',
+    #     'event_type 3',
+    # ]
+
+    # p = pd.merge(resource_type, event_type, on='id', how='left')
+    # p.loc[:, 'resource 1 event'] = \
+    #     (p['resource_type'] == 'resource_type 1') & (p['event_type'].isin(events)).astype(float)
+
+    # t = p.groupby(by='id', as_index=False).mean()
+    # return pd.merge(df, t, on='id', how='left')
+
+
+# def resource_type_3_9_10(df):
+
+#     r = resource_type[['id', 'resource_type']]
+
+#     r.loc[:, 'resource type 3 9 10'] = \
+#         (r['resource_type'].isin(['resource_type 3',
+#                                   'resource_type 9',
+#                                   'resource_type 10'])).astype(float)
+#     ret = r.groupby(by='id', as_index=False).median()
+#     return pd.merge(df, ret[['id', 'resource type 3 9 10']], on='id', how='left')
 
 def severity_type_features(df):
 
@@ -58,6 +187,46 @@ def severity_high(df):
                                    'severity_type 5'])).astype(float)
     ret = pd.merge(df, p[['id', 'high log severity']], on='id', how='left')
     return ret
+
+
+def severity_event(df):
+
+    p = pd.merge(severity_type, event_type, on='id')
+    t = p.loc[(p['severity_type'] == 'severity_type 1'), ['id', 'event_type']] \
+        .groupby(by='id', as_index=False).count()
+    df_one = pd.merge(df, t, on='id', how='left')
+
+    return df_one
+
+
+def severity_log(df):
+
+    p = pd.merge(severity_type, log_feature, on='id')
+
+    tw = p.loc[(p['severity_type'] == 'severity_type 2'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    df_tw = pd.merge(df, tw, on='id', how='left')
+
+    return df_tw
+
+
+def severity_log_sum(df):
+
+    p = pd.merge(severity_type, log_feature, on='id')
+
+    t = p.loc[(p['severity_type'] == 'severity_type 2'), ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+    t.loc[:, 'severity_volume'] = p.loc[(p['severity_type'] == 'severity_type 2'), ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()
+
+    t.loc[:, 'severity_log_volume'] = t['severity_volume'] / t['log_feature']
+    df_one = pd.merge(df, t[['id', 'severity_log_volume']], on='id', how='left')
+
+    # tw = p.loc[(p['severity_type'] == 'severity_type 2'), ['id', 'volume']] \
+    #     .groupby(by='id', as_index=False).sum()
+    # df_tw = pd.merge(df, tw, on='id', how='left')
+
+    return df_one
 
 
 def log_features(df):
@@ -172,8 +341,19 @@ def base_features(df):
 
     df_log_count = log_feature_volume(df_log)
     df_severity_high = severity_high(df_log_count)
+    df_resource_type = resource_type_event_count(df_severity_high)
+    #df_resource_type_severity = resource_type_severity(df_resource_type)
+    df_resource_type_log = resource_type_log(df_resource_type)
+    #df_resource_type_log_sum = resource_type_log_sum(df_resource_type_log)
+    #df_resource_type_log_total = resource_type_log_total(df_resource_type_log_sum)
 
-    df_complete = df_severity_high
+    #df_severity_event = severity_event(df_resource_type_log_total)
+    #df_severity_log = severity_log(df_severity_event)
+    #df_severity_log_sum = severity_log_sum(df_severity_log)
+    #df_event_resource_features = event_resource_features(df_severity_log)
+    #df_event_log_features = event_log_features(df_event_resource_features)
+
+    df_complete = df_resource_type_log
 
     return df_complete
 
@@ -234,6 +414,37 @@ def event_type_features(df):
     df_event = pd.merge(df, event_grpd, left_on='id', right_index=True)
     #df_event.loc[:, 'has_event_20'] = df_event['event_type 20']
     return df_event
+
+
+def event_resource_features(df):
+
+    e = pd.merge(event_type, resource_type, on='id')
+    p = e.loc[e['event_type'] == 'event_type 23', ['id', 'resource_type']] \
+        .groupby(by='id', as_index=False).count()
+    df_23 = pd.merge(df, p, on='id', how='left')
+
+    return df_23
+
+
+def event_log_features(df):
+
+    l = pd.merge(event_type, log_feature, on='id')
+    p = l.loc[l['event_type'] == 'event_type 15', ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()
+
+    df_15 = pd.merge(df, p[['id', 'volume']], on='id', how='left')
+
+    p = l.loc[l['event_type'] == 'event_type 15', ['id', 'log_feature']] \
+        .groupby(by='id', as_index=False).count()
+
+    df_15c = pd.merge(df_15, p, on='id', how='left')
+
+
+    p = l.loc[l['event_type'] == 'event_type 14', ['id', 'volume']] \
+        .groupby(by='id', as_index=False).sum()
+    df_14 = pd.merge(df_15c, p[['id', 'volume']], on='id', how='left')
+
+    return df_14
 
 
 def event_severity_prob(train, test, level=0):

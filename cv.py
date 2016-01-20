@@ -16,7 +16,7 @@ def train_test(df, base_split=0.20, recombine=0.6):
 
     unique_location_sets = []
 
-    for i in range(n_splits-1):
+    for i in range(n_splits):
         ctr = 0
         group_labels = []
         while ctr < nmb_unknown:
