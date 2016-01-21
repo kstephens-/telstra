@@ -10,10 +10,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from sklearn.svm import LinearSVC
 from sklearn.decomposition import PCA
-from sklearn.feature_selection import SelectKBest, chi2, f_classif
+from sklearn.feature_selection import SelectKBest, chi2, f_classif, GenericUnivariateSelect
 
 
-submit = False
+submit = True
 version = '0.25'
 
 
@@ -24,9 +24,9 @@ def xgboost_model(train, labels, test):
     params['num_class'] = 3
     params['eval_metric'] = 'mlogloss'
 
-    params['eta'] = 0.02
+    params['eta'] = 0.01
     params['gamma'] = 2.0
-    params['max_depth'] = 10
+    params['max_depth'] = 8
     params['min_child_weight'] = 0.1
     params['max_delta_step'] = 1.5
     params['subsample'] = 0.75
@@ -39,7 +39,7 @@ def xgboost_model(train, labels, test):
     xgtrain = xgb.DMatrix(train, labels)
     xgtest = xgb.DMatrix(test)
 
-    num_rounds = 1200
+    num_rounds = 2400
     m = xgb.train(list(params.items()), xgtrain, num_rounds)
     return m, m.predict(xgtest)
 
@@ -102,7 +102,10 @@ if not submit:
         print(test.shape)
 
 
-        ch2 = SelectKBest(chi2, k=500)
+        #ch2 = SelectKBest(chi2, k=550)
+        ch2 = GenericUnivariateSelect(score_func=chi2,
+                                      mode='percentile',
+                                      param=80)
         train = ch2.fit_transform(train, labels)
         test = ch2.transform(test)
 
@@ -239,7 +242,10 @@ else:
     test = test.fillna(0)
     test = test.astype(float)
 
-    ch2 = SelectKBest(chi2, k=500)
+    #ch2 = SelectKBest(chi2, k=500)
+    ch2 = GenericUnivariateSelect(score_func=chi2,
+                                      mode='percentile',
+                                      param=80)
     train = ch2.fit_transform(train, labels)
     test = ch2.transform(test)
 
